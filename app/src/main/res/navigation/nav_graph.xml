@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/FirstFragment">
+
+    <fragment
+        android:id="@+id/FirstFragment"
+        android:name="com.example.catsabmobile.FirstFragment"
+        android:label="@string/first_fragment_label"
+        tools:layout="@layout/fragment_first">
+
+        <action
+            android:id="@+id/action_FirstFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/SecondFragment"
+        android:name="com.example.catsabmobile.SecondFragment"
+        android:label="@string/second_fragment_label"
+        tools:layout="@layout/fragment_second">
+
+        <action
+            android:id="@+id/action_SecondFragment_to_FraisFragment"
+            app:destination="@id/fraisFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fraisFragment"
+        android:name="com.example.catsabmobile.FraisFragment"
+        android:label="@string/frais_fragment_label"
+        tools:layout="@layout/fragment_frais">
+
+        <action
+            android:id="@+id/action_fraisFragment_to_firstFragment"
+            app:destination="@id/FirstFragment" />
+        <action
+            android:id="@+id/fraisDetailFragmentAction"
+            app:destination="@id/fraisDetailFragment"/>
+
+    </fragment>
+    <fragment
+        android:id="@+id/fraisDetailFragment"
+        android:name="com.example.catsabmobile.FraisDetailFragment"
+        android:label="@string/frais_detail_fragment_label"
+        tools:layout="@layout/fragment_frais_detail">
+        <argument
+            android:name="fraisId"
+            app:argType="string"
+            android:defaultValue="0"/>
+        <action
+            android:id="@+id/attachmentsListAction"
+            app:destination="@+id/attachmentsListFragment"/>
+
+    </fragment>
+    <fragment
+        android:id="@+id/attachmentsListFragment"
+        android:name="com.example.catsabmobile.AttachmentsFragment"
+        android:label="@string/frais_detail_fragment_label"
+        tools:layout="@layout/fragment_attachments">
+        <argument
+            android:name="fraisId"
+            app:argType="string"
+            android:defaultValue="0"/>
+
+    </fragment>
+</navigation>
