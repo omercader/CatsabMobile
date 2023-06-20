@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener {
@@ -45,6 +46,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private PreviewView previewView;
     private Button capture;
     private ImageCapture imageCapture;
+    private ExecutorService cameraExecutor;
 
     @Override
     public void onCreate(Bundle savedInstances) {
@@ -61,7 +63,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             ActivityCompat.requestPermissions(this,
                     REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
+        cameraExecutor = Executors.newSingleThreadExecutor();
 
+
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        cameraExecutor.shutdown();
 
     }
 
@@ -124,7 +134,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         imageCapture = builder
                 .setTargetRotation(this.getWindowManager().getDefaultDisplay().getRotation())
                 .build();
-        //preview.setSurfaceProvider(mPreviewView.createSurfaceProvider());
+
+
+        preview.setSurfaceProvider(previewView.getSurfaceProvider());
         cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis, imageCapture);
 
 
