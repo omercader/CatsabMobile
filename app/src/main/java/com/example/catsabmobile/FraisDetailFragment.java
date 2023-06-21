@@ -107,7 +107,9 @@ public class FraisDetailFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 //Add attachment camera activity
-                startActivity(new Intent(getActivity(),CameraActivity.class));
+                Intent intent = new Intent(getActivity(),CameraActivity.class);
+                intent.putExtra("frais_id",fraisId);
+                startActivity(intent);
 
             }
         });

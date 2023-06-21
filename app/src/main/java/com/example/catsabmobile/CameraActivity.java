@@ -37,6 +37,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import oogbox.api.odoo.OdooClient;
+import oogbox.api.odoo.client.helper.data.OdooResult;
+import oogbox.api.odoo.client.helper.utils.OdooValues;
+import oogbox.api.odoo.client.listeners.IOdooResponse;
+
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener {
 
     private int REQUEST_CODE_PERMISSIONS = 1001;
@@ -47,12 +52,14 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private Button capture;
     private ImageCapture imageCapture;
     private ExecutorService cameraExecutor;
+    private String fraisId;
 
     @Override
     public void onCreate(Bundle savedInstances) {
         super.onCreate(savedInstances);
         setContentView(R.layout.camera_layout);
 
+        fraisId = getIntent().getStringExtra("frais_id");
         previewView = findViewById(R.id.cameraView);
         capture = findViewById(R.id.capture);
         capture.setOnClickListener(this);
@@ -147,7 +154,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     public String getBatchDirectoryName() {
 
         String app_folder_path = "";
-        app_folder_path = Environment.getExternalStorageDirectory().toString() + "/CatsabMobile";
+        app_folder_path = Environment.getExternalStorageDirectory().toString() + "/DCIM";
         File dir = new File(app_folder_path);
         if (!dir.exists() && !dir.mkdirs()) {
 
@@ -175,7 +182,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         File file = new File(getBatchDirectoryName(), mDateFormat.format(new Date())+ ".jpg");
 
         ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
-        imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this), new ImageCapture.OnImageSavedCallback () {
+        imageCapture.takePicture(outputFileOptions, cameraExecutor, new ImageCapture.OnImageSavedCallback () {
             @Override
             public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                 new Handler().post(new Runnable() {
@@ -184,6 +191,23 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                         Toast.makeText(CameraActivity.this, "Image Saved successfully", Toast.LENGTH_SHORT).show();
                     }
                 });
+
+                //Aqui grabarem una nova entrada a els attachments odoo
+                OdooClient client = OdooClientFactory.getInstance().getClient();
+
+                OdooValues values = new OdooValues();
+                values.put("name", file.getName());
+                values.put("type", "binary");
+                values.put("res.model","hr.expense");
+                values.put("res.id", fraisId);
+
+                client.create("ir.attachment", values, new IOdooResponse() {
+                    @Override
+                    public void onResult(OdooResult result) {
+                        int serverId = result.getInt("result");
+                    }
+                });
+
             }
             @Override
             public void onError(@NonNull ImageCaptureException error) {
