@@ -2,9 +2,12 @@ package com.example.catsabmobile;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +31,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,6 +42,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import oogbox.api.odoo.OdooClient;
+import oogbox.api.odoo.client.helper.OdooErrorException;
 import oogbox.api.odoo.client.helper.data.OdooResult;
 import oogbox.api.odoo.client.helper.utils.OdooValues;
 import oogbox.api.odoo.client.listeners.IOdooResponse;
@@ -198,13 +203,28 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 OdooValues values = new OdooValues();
                 values.put("name", file.getName());
                 values.put("type", "binary");
-                values.put("res.model","hr.expense");
-                values.put("res.id", fraisId);
+                values.put("res_model","hr.expense");
+
+                Bitmap bm = BitmapFactory.decodeFile(file.getPath());
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); // bm is the bitmap object
+                byte[] b = baos.toByteArray();
+                String imageEncoded = Base64.encodeToString(b,Base64.DEFAULT);
+                values.put("datas", imageEncoded);
+                values.put("mimetype","image/jpeg");
+                int ifraisId = Float.valueOf(fraisId).intValue();
+                values.put("res_id", ifraisId);
 
                 client.create("ir.attachment", values, new IOdooResponse() {
                     @Override
                     public void onResult(OdooResult result) {
                         int serverId = result.getInt("result");
+                    }
+
+                    @Override
+                    public boolean onError(OdooErrorException error){
+                        error.printStackTrace();
+                        return false;
                     }
                 });
 
