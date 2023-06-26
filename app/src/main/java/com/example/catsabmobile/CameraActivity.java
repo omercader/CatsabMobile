@@ -1,12 +1,19 @@
 package com.example.catsabmobile;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +22,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,8 +46,11 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -51,13 +66,19 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private int REQUEST_CODE_PERMISSIONS = 1001;
 
-    private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
+    private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"};
 
     private PreviewView previewView;
     private Button capture;
     private ImageCapture imageCapture;
     private ExecutorService cameraExecutor;
     private String fraisId;
+
+    private ActivityResultLauncher<String[]> activityResultLauncher;
+    private boolean isCameraPermissionGranted = false;
+    private boolean isReadPermissionGranted = false;
+    private boolean isWritePermissionGranted = false;
+
 
     @Override
     public void onCreate(Bundle savedInstances) {
@@ -69,15 +90,63 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         capture = findViewById(R.id.capture);
         capture.setOnClickListener(this);
 
+
+
+        activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
+            @Override
+            public void onActivityResult(Map<String, Boolean> result) {
+
+                if(result.get(Manifest.permission.CAMERA) != null){
+                    isCameraPermissionGranted = result.get(Manifest.permission.CAMERA);
+                }
+                if(result.get(Manifest.permission.READ_EXTERNAL_STORAGE) != null){
+                    isReadPermissionGranted = result.get(Manifest.permission.READ_EXTERNAL_STORAGE);
+                }
+                if(result.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) != null){
+                    isWritePermissionGranted = result.get(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                }
+
+            }
+        });
+
+
         if (allPermissionsGranted()) {
             startCamera();
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
+
         cameraExecutor = Executors.newSingleThreadExecutor();
 
 
+    }
+
+    private void requestPermissions(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+
+            isCameraPermissionGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+            isReadPermissionGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+            isWritePermissionGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+
+            List<String> permissionRequests = new ArrayList<String>();
+
+           if(!isCameraPermissionGranted){
+                permissionRequests.add(Manifest.permission.CAMERA);
+           }
+           if(!isReadPermissionGranted){
+               permissionRequests.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+           }
+            if(!isWritePermissionGranted){
+                permissionRequests.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            }
+
+           if(!permissionRequests.isEmpty()){
+               activityResultLauncher.launch(permissionRequests.toArray(new String[0]));
+           }
+
+        }else{
+
+            ActivityCompat.requestPermissions(this,
+                    REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+        }
     }
 
     @Override
@@ -90,13 +159,11 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private boolean allPermissionsGranted(){
 
-        for(String permission : REQUIRED_PERMISSIONS){
-            if(ContextCompat.checkSelfPermission(getBaseContext(), permission) != PackageManager.PERMISSION_GRANTED){
-                return false;
-            }
-        }
-        return true;
+
+        requestPermissions();
+        return isWritePermissionGranted && isCameraPermissionGranted && isReadPermissionGranted;
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
