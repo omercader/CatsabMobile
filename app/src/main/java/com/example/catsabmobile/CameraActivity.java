@@ -251,18 +251,18 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private void capture(){
 
         SimpleDateFormat mDateFormat = new SimpleDateFormat("ddMMyyyHHmmss", Locale.FRANCE);
-        File file = new File(getBatchDirectoryName(), mDateFormat.format(new Date())+ ".jpg");
-
+        ;
+        File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),mDateFormat.format(new Date())+ ".jpg");
         ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
         imageCapture.takePicture(outputFileOptions, cameraExecutor, new ImageCapture.OnImageSavedCallback () {
             @Override
             public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                new Handler().post(new Runnable() {
+                /*new Handler().post(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(CameraActivity.this, "Image Saved successfully", Toast.LENGTH_SHORT).show();
                     }
-                });
+                });*/
 
                 //Aqui grabarem una nova entrada a els attachments odoo
                 OdooClient client = OdooClientFactory.getInstance().getClient();
@@ -286,6 +286,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     @Override
                     public void onResult(OdooResult result) {
                         int serverId = result.getInt("result");
+                        finish();
                     }
 
                     @Override
