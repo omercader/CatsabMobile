@@ -39,8 +39,12 @@ public class FraisDetailFragment extends Fragment {
     private TextView dateView;
     private ImageView addAttachmentIconView;
     private ImageView attachmentIconView;
+    private Button saveButton;
+    private Button cancelButton;
+    private ImageView editIconView;
 
-    private String fraisId;
+    private String fraisId=null;
+    private boolean toCreate = false;
     private int attachments;
 
     @Override
@@ -59,10 +63,10 @@ public class FraisDetailFragment extends Fragment {
         addAttachmentIconView = view.findViewById(R.id.addAttachmentIconView);
         attachmentIconView = view.findViewById(R.id.attachmentsIconView);
 
-        Button saveButton =  ((Button)view.findViewById(R.id.frais_save_butt));
-        Button cancelButton = ((Button)view.findViewById(R.id.frais_cancel_butt));
+        saveButton =  ((Button)view.findViewById(R.id.frais_save_butt));
+        cancelButton = ((Button)view.findViewById(R.id.frais_cancel_butt));
 
-        ImageView editIconView = view.findViewById(R.id.frais_edit_icon);
+        editIconView = view.findViewById(R.id.frais_edit_icon);
         editIconView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -70,7 +74,6 @@ public class FraisDetailFragment extends Fragment {
                cancelButton.setVisibility(View.VISIBLE);
                editIconView.setVisibility(View.INVISIBLE);
                nameView.setEnabled(true);
-               prodIdView.setEnabled(true);
                unitAmView.setEnabled(true);
                quantityView.setEnabled(true);
             }
@@ -125,7 +128,19 @@ public class FraisDetailFragment extends Fragment {
         super.onViewCreated(view,savedInstanceState);
 
         fraisId = FraisDetailFragmentArgs.fromBundle(getArguments()).getFraisId();
-        readRecord(fraisId);
+        if(!fraisId.equals("0")) {
+            readRecord(fraisId);
+        }else{
+            //Crearem el frais pq no hi ha fraisId
+            toCreate = true;
+            saveButton.setVisibility(View.VISIBLE);
+            cancelButton.setVisibility(View.VISIBLE);
+            editIconView.setVisibility(View.INVISIBLE);
+            nameView.setEnabled(true);
+            unitAmView.setEnabled(true);
+            quantityView.setEnabled(true);
+
+        }
 
         attachmentIconView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -189,22 +204,39 @@ public class FraisDetailFragment extends Fragment {
         values.put("name",name);
         values.put("unit_amount",Integer.valueOf(unit_amnt).intValue());
         values.put("quantity",Integer.valueOf(quantity).intValue());
+        values.put("product_id",6);
 
+        if(!toCreate) {
+            client.write("hr.expense", ids, values, new IOdooResponse() {
+                @Override
+                public void onResult(OdooResult result) {
 
-        client.write("hr.expense", ids, values, new IOdooResponse() {
-            @Override
-            public void onResult(OdooResult result) {
+                    Toast.makeText(getContext(), "Record updated successfully", Toast.LENGTH_LONG).show();
+                    Log.println(Log.INFO, "ODOO", "Record updated successfully");
+                }
 
-                Toast.makeText(getContext(), "Record updated successfully", Toast.LENGTH_LONG).show();
-                Log.println(Log.INFO,"ODOO","Record updated successfully");
-            }
+                @Override
+                public boolean onError(OdooErrorException error) {
+                    Log.println(Log.ERROR, "ODOO", "Error recovering read info");
+                    return super.onError(error);
+                }
+            });
+        }else{
+            client.create("hr.expense",values, new IOdooResponse() {
+                @Override
+                public void onResult(OdooResult result) {
 
-            @Override
-            public boolean onError(OdooErrorException error) {
-                Log.println(Log.ERROR,"ODOO","Error recovering read info");
-                return super.onError(error);
-            }
-        });
+                    Toast.makeText(getContext(), "Record updated successfully", Toast.LENGTH_LONG).show();
+                    Log.println(Log.INFO, "ODOO", "Record updated successfully");
+                }
+
+                @Override
+                public boolean onError(OdooErrorException error) {
+                    Log.println(Log.ERROR, "ODOO", "Error recovering read info");
+                    return super.onError(error);
+                }
+            });
+        }
 
     }
 }

@@ -80,7 +80,7 @@
         android:enabled="false"
         android:inputType="textPersonName"
         android:minHeight="48dp"
-        android:text="Name"
+        android:text="Expenses"
         app:layout_constraintStart_toEndOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/fraisDescription" />
 
@@ -130,9 +130,9 @@
         android:id="@+id/frais_edit_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="328dp"
-        android:layout_marginTop="132dp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="136dp"
+        android:layout_marginEnd="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fraisDate"
         app:srcCompat="@drawable/edit_icon" />
 
@@ -140,11 +140,11 @@
         android:id="@+id/frais_cancel_butt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="204dp"
+        android:layout_marginStart="52dp"
         android:layout_marginTop="108dp"
         android:text="@string/frais_cancel_butt"
         android:visibility="invisible"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/frais_save_butt"
         app:layout_constraintTop_toBottomOf="@+id/fraisDate" />
 
     <Button
@@ -173,9 +173,9 @@
         android:id="@+id/addAttachmentIconView"
         android:layout_width="35dp"
         android:layout_height="31dp"
-        android:layout_marginStart="328dp"
         android:layout_marginTop="40dp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginEnd="56dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fraisDate"
         app:srcCompat="@drawable/add_icon" />
 </androidx.constraintlayout.widget.ConstraintLayout>

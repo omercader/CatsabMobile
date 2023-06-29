@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -26,6 +27,7 @@ import oogbox.api.odoo.client.listeners.IOdooResponse;
 public class FraisFragment extends Fragment {
 
 
+    ImageView addFraisIconView;
 
     public FraisFragment(){
 
@@ -85,6 +87,16 @@ public class FraisFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        addFraisIconView = view.findViewById(R.id.addFraisIconView);
+
+        addFraisIconView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FraisFragmentDirections.FraisDetailFragmentAction action = FraisFragmentDirections.fraisDetailFragmentAction();
+                Navigation.findNavController(view).navigate(action);
+            }
+        });
 
 
     }
