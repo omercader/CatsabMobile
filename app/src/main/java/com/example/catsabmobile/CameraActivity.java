@@ -31,6 +31,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.CameraX;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
@@ -146,6 +147,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
             ActivityCompat.requestPermissions(this,
                     REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+
+            isCameraPermissionGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+            isReadPermissionGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+            isWritePermissionGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+
+
         }
     }
 
@@ -170,7 +177,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         super.onRequestPermissionsResult(requestCode,permissions,grantResults);
         if(requestCode == REQUEST_CODE_PERMISSIONS){
             if(allPermissionsGranted()){
-                startCamera();
+                //startCamera();
             } else{
                 Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
             }
@@ -178,6 +185,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void startCamera() {
+
+
 
         final ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
